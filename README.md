@@ -1,6 +1,9 @@
-# Torrent Creator & Upload Autofill
+<div align="center">
 
-**Automatic Description, ScrForm Filler (Python + Tampermonkey)**
+# Torrent Creator & Upload Autofill
+### Automatic Description, ScrForm Filler (Python + Tampermonkey)
+
+</div>
 
 ## ✨ Features
 
@@ -33,7 +36,8 @@ Just make sure to also add each server’s IP or domain in the header using `// 
 
 ## 🎬 Demo Video — How It Works
 
-https://www.youtube.com/watch?v=2A_cUIe8jIo
+## 🎬 Demo Video — How It Works
+[![Demo Video](https://img.youtube.com/vi/2A_cUIe8jIo/0.jpg)](https://www.youtube.com/watch?v=2A_cUIe8jIo)
 
 ## ⚙️ How It Works
 
