@@ -382,7 +382,7 @@ def main():
     if START_HTTP_SERVER:
         try:
             # 1. Clean old (Safety check, though handled at start)
-            cleanup_sync_files()
+            # cleanup_sync_files()
 
             # 2. Save JSON with direct torrent reference
             torrent_filename = f"{target_path.name}.torrent"
