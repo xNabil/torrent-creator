@@ -1,143 +1,163 @@
-Here is the updated **README.md**. I have added a dedicated **"Configuration Guide"** section that breaks down exactly what every setting does, so users understand *why* they might want to change them.
+# Torrent Creator & Upload Autofill
 
----
+**Automatic Description, ScrForm Filler (Python + Tampermonkey)**
 
-# 🚀 TorrentBD Auto-Upload Assistant
+## ✨ Features
 
-**A hybrid automation tool that links your local PC to the TorrentBD Upload Page.**
+**🚀 Zero-Click Upload Pipeline**  
+Your browser script talks directly to your PC/VPS and auto-fills the **Title** and **Description** (description is auto-copied to clipboard), then **automatically selects and attaches** the generated `.torrent` file. No dragging. No manual work.
 
-This project consists of two parts that work in perfect sync:
+**📸 Smart Auto-Screenshots & MediaInfo**  
+Automatically generates **6 perfectly spaced screenshots** using FFmpeg and uploads them to **ImgBB / FreeImage**, and also extracts MediaInfo from the video.  
+If you select a **folder**, the script creates a `.torrent` for the entire folder, then randomly picks one media file from any subfolder to generate screenshots and MediaInfo.
 
-1. **Python Script (The Backend):** Runs on your PC. It processes video files, generates screenshots, creates `.torrent` files, and hosts a local synchronization server.
-2. **Tampermonkey Script (The Frontend):** Runs in your browser. It connects to your local Python server to auto-fill the upload form and attach files wirelessly.
+**🧲 Instant Torrent Creation**  
+Uses **mkbrr** to create **private, hashed .torrent files** in seconds. Works for single files **or full folders**.
 
----
+**🎬 Built-in IMDb Search**  
+Includes a **custom popup IMDb finder** so you can grab the correct IMDb ID **without leaving the upload page**.
 
-## ✨ Key Features
+**🖼️ Auto Cover Fetch & Optimize**  
+Automatically pulls the cover image and **compresses it under 256KB (JPG)**.
 
-### 🐍 Python Script
+## 🛠️ Configuration Features
 
-* **Auto-Torrent Creation:** Uses `mkbrr` to generate private, hashed `.torrent` files automatically.
-* **Smart Screenshots:** Uses `ffmpeg` to capture 6 evenly spaced, full-resolution screenshots (skipping the first/last 20% of the video to avoid intros/credits).
-* **Image Hosting:** Automatically uploads screens to **ImgBB** or **FreeImage** and generates BBCode.
-* **MediaInfo Extraction:** Scans the file using `MediaInfo` and formats the technical details.
-* **Local Sync Server:** Starts a lightweight HTTP server on port `8090` to send data to your browser.
+![Config screenshot](https://i.ibb.co.com/kgFr7DxZ/image.png)
 
-### 🐵 Tampermonkey Script
+This config lets you control how the script works: you can set how many screenshots it takes, choose between **imgbb** or **freeimage** as the image host, enable or disable lossless quality, decide whether to create the torrent file, copy the generated description to your clipboard, or save it as a `.txt` file. You can also enable the Windows file picker instead of using the command line, set your tracker announce URL, and turn on the built-in HTTP server for Tampermonkey sync.
 
-* **One-Click Fill:** The "Sync Now" button instantly populates the Torrent Name, Description, and **attaches the .torrent file** (bypassing the need to browse for it manually).
-* **IMDb Search Modal:** A custom pop-up to search for IMDb IDs without leaving the upload tab.
-* **Cover Art Optimizer:** Fetches high-res posters and automatically compresses them to <256KB to meet site limits.
+![Multiple servers config](https://iili.io/fmEdzEQ.md.png)
 
----
+You can add **multiple servers** in the Tampermonkey script by editing the `SERVERS` list. Add as many as you want, and the UI will update automatically.  
+Just make sure to also add each server’s IP or domain in the header using `// @connect YourIP` (like the localhost example), otherwise Tampermonkey will block the request.
 
-## ⚙️ Configuration Guide
+## 🎬 Demo Video — How It Works
 
-This script is highly customizable. Open `main.py` in any text editor to change these settings.
+https://www.youtube.com/watch?v=2A_cUIe8jIo
 
-### 1. Python Script Settings (`main.py`)
+## ⚙️ How It Works
 
-| Setting | Default | What it does |
-| --- | --- | --- |
-| **`IMGBB_API_KEY`** | `"..."` | **REQUIRED.** You must paste your API key here for image uploading to work. Get it free [here](https://api.imgbb.com/). |
-| **`IMAGE_HOST`** | `"freeimage"` | Choose where to upload screenshots. Options: `"imgbb"` (32MB limit) or `"freeimage"` (64MB limit). |
-| **`SCREENSHOT_COUNT`** | `6` | The number of screenshots generated for the description. |
-| **`CREATE_TORRENT_FILE`** | `True` | If `True`, the script creates a `.torrent` file using `mkbrr`. Set to `False` if you already have one. |
-| **`PRIVATE_TORRENT`** | `True` | **Crucial for TorrentBD.** Ensures the "Private" flag is set inside the torrent file so it tracks your stats correctly. |
-| **`AUTO_DELETE_CREATED_FILES`** | `False` | If `True`, the script deletes the generated `.torrent` and `.txt` files after you close the script to keep your folder clean. |
-| **`HTTP_PORT`** | `8090` | The network port used to talk to the browser. Only change this if port 8090 is already in use by another app. |
+The **Python script** creates the `.torrent` file, generates the description, makes a `latest.json` file with all data and starts a **temporary HTTP server** in that folder.
 
-### 2. Tampermonkey Settings (Top of Script)
+Then the **Tampermonkey script** pulls the `latest.json` file & torrent file from that server and automatically fills the upload page.
 
-| Setting | What it does |
-| --- | --- |
-| **`SERVERS`** | This list tells the browser where to look for the Python script. Default is `localhost`. If you run Python on a different PC (e.g., a laptop), you can add its IP address here (e.g., `http://192.168.1.50:8090`). |
-| **`MAX_IMG_SIZE`** | Limits the cover image size (default 256KB) to prevent upload errors on TorrentBD. |
+**Why an HTTP server?**  
+Because this was mainly built to work with my **VPS (used as a Seedbox)**. Pulling files over HTTP to my local PC is fast, simple, and reliable for uploading.
 
----
+Once you exit the script, the **temporary HTTP server stops automatically**.
 
-## 🛠️ Prerequisites
+## 📜 The Script
 
-The Python script relies on three external command-line tools. You must have these installed and added to your system **PATH** (or placed in the same folder as the script).
+**1. Python Script** (Save as `main.py`)  
+→ Source: https://github.com/xNabil/torrent-creator/blob/main/main.py
 
-1. **Python 3.10+**: [Download Here](https://www.python.org/downloads/)
-2. **FFmpeg**: Used for taking screenshots. [Download Here](https://ffmpeg.org/download.html)
-3. **MediaInfo (CLI)**: Used for technical specs. [Download Here](https://mediaarea.net/en/MediaInfo/Download/Windows) (Look for the CLI version).
-4. **mkbrr**: Used for creating the torrent file. [Download Here](https://github.com/autobrr/mkbrr/releases).
+**2. Tampermonkey Script** (Add to Browser)  
+→ Install: https://greasyfork.org/en/scripts/565356-torrent-autofill
 
-> **⚠️ Quick Fix:** If you don't know how to edit System PATH, just copy `ffmpeg.exe`, `mediainfo.exe`, and `mkbrr.exe` into the **same folder** as `main.py`.
+## 🛠️ Requirements & Installation
 
----
+**Requirements:**
 
-## 🚀 How to Use (The Workflow)
+- Python
+- mkbrr
+- FFmpeg
+- MediaInfo
 
-### Step 1: Run the Python Script
+### 🪟 Windows
 
-Double-click `main.py` or run it via terminal:
+#### Automatic Installation
+
+I made a batch script that installs **Python, mkbrr, FFmpeg, and MediaInfo** and automatically adds them to the system PATH.
+
+Download `winsetup.cmd` from my GitHub repo:  
+https://github.com/xNabil/torrent-creator/
+
+Run it as **Administrator**. Admin rights are required to add everything to the system PATH.
+
+You may need to run it **2–3 times**. (Because after installing a tool and adding it to PATH, the current CMD session doesn’t always refresh instantly.)
+
+#### Manual Installation
+
+**1) Install Python**  
+Download: https://python.org  
+Install it and make sure to tick **"Add Python to PATH"**
+
+**Install required Python library**  
+```bash
+pip install requests
+```
+
+**2) Install mkbrr**  
+Download: https://github.com/autobrr/mkbrr/releases  
+Get: `mkbrr_1.20.0_windows_x86_64.zip`  
+Extract it and copy `mkbrr.exe` to `C:\Windows`
+
+**Verify:**  
+```bash
+mkbrr --help
+```
+
+**3) Install FFmpeg**  
+```bash
+winget install -e --id Gyan.FFmpeg.Essentials --accept-package-agreements --accept-source-agreements
+```
+
+**Check:**  
+```bash
+ffmpeg -version
+ffprobe -version
+```
+
+**4) Install MediaInfo**  
+```bash
+winget install -e --id MediaArea.MediaInfo --accept-package-agreements --accept-source-agreements
+```
+
+**Check:**  
+```bash
+mediainfo --Version
+```
+
+### 🐧 Linux / VPS (Debian/Ubuntu) (One-line)
+
+```bash
+sudo apt update && sudo apt install -y python3 python3-requests ffmpeg mediainfo xclip curl && \
+curl -L https://github.com/autobrr/mkbrr/releases/latest/download/mkbrr-linux-amd64 -o /usr/local/bin/mkbrr && \
+chmod +x /usr/local/bin/mkbrr
+```
+
+## ✅ That’s it
+
+## ⚡ Usage Guide
+
+**Step 1: Open the Upload Page**  
+https://www.torrentbd.net/torrents-upload.php
+
+![Upload page dashboard](https://iili.io/fm0BiUQ.png)
+
+**Step 2: Run the Python Script**
 
 ```bash
 python main.py
-
 ```
 
-* **Select File:** You will be asked to choose a video file or a folder.
-* **Processing:** The script will generate the `.torrent`, upload screenshots, and prepare the text.
-* **Server Start:** Once finished, you will see:
-> `⚡ HTTP Server Running on http://localhost:8090`
+Select your video file or folder. The script will automatically generate screenshots, create the `.torrent` file, and start a local server.
 
+![Script running](https://iili.io/fm0BQ5B.png)
 
-* **Do not close this window!** It acts as the server for your browser.
+**Step 3: Sync in Browser**  
+Go back to the upload page. You will see the dashboard fill in the **title, description, and .torrent file** automatically.
 
-### Step 2: Open TorrentBD
+**Note:** The title is taken from your file/folder name, so make sure everything is correct before uploading.
 
-1. Go to the [TorrentBD Upload Page](https://www.torrentbd.net/torrents-upload.php).
-2. You will see the **Autofill Dashboard** in the bottom right corner.
-3. The status dot should be **Green** (indicating it sees your Python script running).
+![Filled form](https://iili.io/fm0BLJV.png)
 
-### Step 3: Sync & Upload
+**TMDB Search**  
+Click the TMDB search button to open a mini IMDb/TMDB popup. Search and select your title — it will automatically fill the link, fetch the cover image, compress it under **256KB (JPG)**, and set it as the torrent cover.
 
-1. Click **Sync Now** on the dashboard.
-2. Watch the magic happen:
-* **Title** is filled.
-* **Description** (Screenshots + MediaInfo) is filled.
-* **Torrent File** is automatically attached.
+![TMDB popup 1](https://iili.io/fm0NlnI.png)  
+![TMDB popup 2](https://iili.io/fm0BZOP.png)
 
-
-3. Use the **IMDb Search** button (next to the IMDb field) to find the correct movie/series.
-4. Click Upload.
-
----
-
-## ❓ Troubleshooting
-
-**Q: Screenshots fail to upload?**
-
-* Check your `IMGBB_API_KEY` in `main.py`. It might be empty or invalid.
-* If using ImgBB and your PNGs are huge (>32MB), switch `IMAGE_HOST` to `"freeimage"`.
-
-**Q: "mkbrr not found" error?**
-
-* The script cannot find the `mkbrr.exe` tool. Download it and put it in the same folder as `main.py`.
-
-**Q: Browser says "Offline" (Red Dot)?**
-
-* Ensure the Python script window is still open.
-* Ensure you haven't changed the `HTTP_PORT` in one script but not the other.
-* If using Chrome, check if an extension blocker is stopping the connection to `localhost`.
-
----
-
-## 📂 File Structure
-
-```text
-/Your-Project-Folder/
-│
-├── main.py                # The Automation Script
-├── requirements.txt       # List of python libraries
-├── README.md              # This file
-│
-├── ffmpeg.exe             # (Optional: If not in PATH)
-├── mkbrr.exe              # (Optional: If not in PATH)
-└── mediainfo.exe          # (Optional: If not in PATH)
-
+**Cleanup**  
+After you exit the script, it will stop the HTTP server and delete the `latest.json` file automatically.
 ```
